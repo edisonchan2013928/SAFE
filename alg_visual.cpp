@@ -22,6 +22,10 @@ void GBF_iter(Tree& tree, statistics& stat)
 
 	if (stat.method >= 1 && stat.method <= 2)
 	{
+		#ifdef COUNT_ACCESSED_NODE
+			stat.out_num_accessed_nodes[stat.cur_r][stat.cur_c]++;
+		#endif
+
 		L = rootNode->LB(cur_q, stat);
 		U = rootNode->UB(cur_q, stat);
 	}
@@ -53,6 +57,10 @@ void GBF_iter(Tree& tree, statistics& stat)
 		//leaf Node
 		if ((int)curNode->idList.size() <= tree.leafCapacity)
 		{
+			#ifdef COUNT_ACCESSED_NODE
+				stat.out_num_accessed_nodes[stat.cur_r][stat.cur_c]++;
+			#endif
+
 			f_cur = refinement(curNode, stat);
 			L = L + f_cur;
 			U = U + f_cur;
@@ -63,6 +71,10 @@ void GBF_iter(Tree& tree, statistics& stat)
 		//Non-Leaf Node
 		for (int c = 0; c < (int)curNode->childVector.size(); c++)
 		{
+			#ifdef COUNT_ACCESSED_NODE
+				stat.out_num_accessed_nodes[stat.cur_r][stat.cur_c]++;
+			#endif
+
 			pq_entry.node_L = curNode->childVector[c]->LB(cur_q, stat);
 			pq_entry.node_U = curNode->childVector[c]->UB(cur_q, stat);
 
@@ -71,6 +83,9 @@ void GBF_iter(Tree& tree, statistics& stat)
 
 			L = L + pq_entry.node_L;
 			U = U + pq_entry.node_U;
+
+			if (pq_entry.node_U < small_epsilon) //small trick for pruning
+				continue;
 
 			pq.push(pq_entry);
 		}
@@ -107,7 +122,7 @@ void visual_Algorithm(statistics& stat)
 		kd_Tree.build_kdTree(stat);
 		kd_Tree.updateAugment((kdNode*)kd_Tree.rootNode);
 	}
-	if (stat.method == 4 || stat.method == 6 || stat.method == 8 || stat.method == 10) //RQS_ball, SAFE (ball-tree), SAFE_all (ball-tree), SAFE_exp (ball-tree)
+	if (stat.method == 4 || stat.method == 6 || stat.method == 8 || stat.method == 10 || stat.method == 12) //RQS_ball, SAFE (ball-tree), SAFE_all (ball-tree), SAFE_exp (ball-tree)
 	{
 		ball_Tree.rootNode = new ballNode();
 		ball_Tree.build_ballTree(stat);
@@ -128,6 +143,7 @@ void visual_Algorithm(statistics& stat)
 				for (int c = 0; c < stat.n_col; c++)
 				{
 					stat.cur_c = c;
+
 					if (stat.method == 1 || stat.method == 2)
 						GBF_iter(kd_Tree, stat);
 					if (stat.method == 3 || stat.method == 11)
@@ -149,6 +165,8 @@ void visual_Algorithm(statistics& stat)
 		SAFE_otf(stat, ball_Tree);
 	if (stat.method == 11)
 		update_visual(stat);
+	if (stat.method == 12)
+		SAFE_parallel(stat, ball_Tree);
 
 	auto end_s = chrono::high_resolution_clock::now();
 
@@ -157,6 +175,10 @@ void visual_Algorithm(statistics& stat)
 	#ifdef SPACE_MODE
 		output_space(stat);
 	#endif
+
+	#ifdef COUNT_ACCESSED_NODE
+		output_count_accessed_node(stat);
+	#endif
+
 	output_visual(stat);
 }
-

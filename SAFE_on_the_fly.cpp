@@ -196,6 +196,15 @@ void update_SAFE_all_space_iter(statistics& stat)
 		stat.SAFE_all_space += num_of_elements * (sizeof(double) + sizeof(int));
 	if (stat.kernel_type == 2)
 		stat.SAFE_all_space += num_of_elements * (2 * sizeof(double) + sizeof(int));
+
+	if (stat.SAFE_all_space > MAX_SPACE)
+	{
+		if (stat.method == 8)
+		{
+			cout << "The space consumption is more than 24GB." << endl;
+			exit(0);
+		}
+	}
 }
 
 void obtain_SAFE_exp_space(statistics& stat)

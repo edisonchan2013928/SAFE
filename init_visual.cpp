@@ -13,21 +13,27 @@ void initStat(int argc, char**argv, statistics& stat)
 	stat.epsilon = atof(argv[9]);
 	stat.leafCapacity = atoi(argv[10]);
 
+	#ifdef COUNT_ACCESSED_NODE //For method = 1 or method = 2  
+		stat.out_num_fileName = argv[11];
+	#endif
+
 	if (stat.method == 11) //data_sampling
 		stat.ori_n = atoi(argv[11]);
 
+	if (stat.method == 12) //parallel processing
+		stat.thread_num = atoi(argv[11]);
+
 	/*char*dataFileName = (char*)"../../../Datasets/Chicago/Chicago";
 	char*bandwidthFileName = (char*)"../../../Datasets/Chicago/Chicago";
-	stat.outMatrixFileName_Prefix = (char*)"./Results/Chicago_M10_test";
-	stat.method = 10;
-	stat.n_row = 64;
-	stat.n_col = 64;
+	stat.outMatrixFileName_Prefix = (char*)"./Results/Chicago_M12_test";
+	stat.method = 12;
+	stat.n_row = 640;
+	stat.n_col = 480;
 	stat.kernel_type = 1;
-	stat.L = 10;
-	//stat.start_b = 1;
-	//stat.incr_b = 2;
+	stat.L = 20;
 	stat.epsilon = 0.01;
-	stat.leafCapacity = 40;*/
+	stat.leafCapacity = 40;
+	stat.thread_num = 12;*/
 
 	extract_FeatureVector(dataFileName, stat);
 	updateRegion(stat);
@@ -43,6 +49,16 @@ void initStat(int argc, char**argv, statistics& stat)
 		for (int r = 0; r < stat.n_row; r++)
 			stat.out_visual[b][r] = new double[stat.n_col];
 	}
+
+	#ifdef COUNT_ACCESSED_NODE
+		stat.out_num_accessed_nodes = new int*[stat.n_row];
+		for (int r = 0; r < stat.n_row; r++)
+			stat.out_num_accessed_nodes[r] = new int[stat.n_col];
+
+		for (int r = 0; r < stat.n_row; r++)
+			for (int c = 0; c < stat.n_col; c++)
+				stat.out_num_accessed_nodes[r][c] = 0;
+	#endif
 }
 
 void gen_bandwidth(statistics& stat)
@@ -201,3 +217,30 @@ void output_visual(statistics& stat)
 		outMatrixFileName_ss.str("");
 	}
 }
+
+#ifdef COUNT_ACCESSED_NODE
+void output_count_accessed_node(statistics& stat)
+{
+	fstream out_num_file;
+	vector<int> count_vec;
+	for (int r = 0; r < stat.n_row; r++)
+		for (int c = 0; c < stat.n_col; c++)
+			count_vec.push_back(stat.out_num_accessed_nodes[r][c]);
+
+	sort(count_vec.begin(), count_vec.end());
+
+	out_num_file.open(stat.out_num_fileName, ios::in | ios::out | ios::trunc);
+
+	if (out_num_file.is_open() == false)
+	{
+		cout << "Cannot open out_num_file!" << endl;
+		return;
+	}
+
+	for (int r = 0; r < stat.n_row; r++)
+		for (int c = 0; c < stat.n_col; c++)
+			out_num_file << count_vec[r*stat.n_col + c] << endl;
+
+	out_num_file.close();
+}
+#endif

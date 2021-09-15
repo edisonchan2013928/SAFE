@@ -2,13 +2,15 @@
 #ifndef INIT_VISUAL_H
 #define INIT_VISUAL_H
 
-#define SPACE_MODE
+//#define SPACE_MODE
+//#define COUNT_ACCESSED_NODE
 
 #include "Library.h"
 
 const double inf = 999999999999;
 const double small_epsilon = 0.000000000000001;
 const double pi = 3.14159265358979323846;
+const double MAX_SPACE = 25769803780;
 
 struct Gap
 {
@@ -45,6 +47,10 @@ struct statistics
 	int cur_c;
 	double q_SquareNorm;
 	double**query_boundary;
+	#ifdef COUNT_ACCESSED_NODE
+		int**out_num_accessed_nodes;
+		char*out_num_fileName;
+	#endif
 
 	//Used in Z-order method
 	int ori_n;
@@ -70,6 +76,9 @@ struct statistics
 		double visual_space;
 	#endif
 
+	//Used in parallel processing
+	int thread_num;
+
 	const int dim = 2; //dim = 2 (2d visualization)
 	int method; //chosen method
 	double epsilon; //epsilon value for epsilon-KVQ
@@ -84,5 +93,9 @@ void initQuery(statistics& stat);
 void extract_FeatureVector(char*fileName, statistics& stat);
 void update_visual(statistics& stat);
 void output_visual(statistics& stat);
+
+#ifdef COUNT_ACCESSED_NODE
+	void output_count_accessed_node(statistics& stat);
+#endif
 
 #endif

@@ -69,7 +69,7 @@ double refinement(Node*curNode, statistics& stat)
 			continue;
 
 		//SAFE_kd and SAFE_ball
-		if (stat.method == 5 || stat.method == 6)
+		if (stat.method == 5 || stat.method == 6 || stat.method == 12)
 			stat.range_result_idList.push_back(id);
 
 		//SAFE_all (kd-tree and ball-tree)

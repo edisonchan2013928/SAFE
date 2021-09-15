@@ -8,6 +8,7 @@
 #include "ball_tree.h"
 #include "SAFE.h"
 #include "SAFE_on_the_fly.h"
+#include "SAFE_parallel.h"
 #include "Validation.h"
 
 struct pqNode
